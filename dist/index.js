@@ -2,9 +2,8 @@
 function createFlux(initialState, option) {
     let $state = initialState;
     let $listener = [];
-    let $actions = option && option.actions;
     let $updater = (() => {
-        const f1 = option && option.updater && option.updater;
+        const f1 = option && option.updater;
         const f2 = (s1, s2) => Object.assign({}, s1, s2);
         return f1 || f2;
     })();
@@ -32,13 +31,13 @@ function createFlux(initialState, option) {
         $listener.forEach(f => f(state, event, error));
     }
     /*
-     * usecase('name').use($ => [$.f1, $.f2])(params)
+     * usecase('name').use([$.f1, $.f2])(params)
      */
     function usecase(name) {
         let $queue = [];
         return { use };
-        function use(queueCreater) {
-            $queue = queueCreater($actions);
+        function use(queue) {
+            $queue = queue;
             /*
                 こんなの必要？
                 $queue = option.middleware($queue)
