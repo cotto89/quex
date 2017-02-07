@@ -1,0 +1,48 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "target": "es6",
+        "lib": [
+            "es2017"
+        ],
+        // .d.tsを生成するか
+        "declaration": true,
+        // "declaration"の吐き出し先
+        // "declarationDir": "types",
+        // コンパイルコードの吐き出し先
+        "outDir": "dist",
+        // nullやundefinedの扱いを厳格にする
+        "strictNullChecks": true,
+        // 暗黙のanyを許可しない
+        "noImplicitAny": true,
+        // 暗黙のthisを許可しない
+        "noImplicitThis": true,
+        // Switch構文の各caseでbreakまたはreturnを必須にする
+        "noFallthroughCasesInSwitch": true,
+        // 返り値の型を厳密にチェック
+        "noImplicitReturns": true,
+        // 未使用の変数を許可しない
+        "noUnusedLocals": true,
+        // 未使用のparameterを許可しない
+        "noUnusedParameters": true,
+        // https://github.com/power-assert-js/espower-typescript/issues/16
+        // trueにするとespower-assertが動かない(?)
+        // その他にもテストが外部からファイルをimportしてないとerrorになる(?)
+        "noEmitOnError": false,
+        "sourceMap": true,
+        "forceConsistentCasingInFileNames": true,
+        "skipDefaultLibCheck": true,
+        "pretty": true,
+        "types": [
+            "mocha",
+            "node"
+        ]
+    },
+    "include": [
+        "src/**/*.ts"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}

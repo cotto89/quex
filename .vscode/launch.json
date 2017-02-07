@@ -1,0 +1,41 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceRoot}/src/index.ts",
+            "outFiles": [
+                "${workspaceRoot}/dist/src/*.js.map",
+                "${workspaceRoot}/dist/src/*.js"
+            ],
+            "skipFiles": [
+                "node_modules/**/*.*"
+            ],
+            "stopOnEntry": false,
+            "args": [],
+            "cwd": "${workspaceRoot}",
+            "preLaunchTask": "build",
+            "runtimeExecutable": null,
+            "runtimeArgs": [
+                "--nolazy"
+            ],
+            "env": {
+                "NODE_ENV": "development"
+            },
+            "sourceMaps": true
+        },
+        {
+            "name": "Attach",
+            "type": "node",
+            "request": "attach",
+            "port": 5858,
+            "address": "localhost",
+            "restart": false,
+            "sourceMaps": false,
+            "localRoot": "${workspaceRoot}",
+            "remoteRoot": null
+        }
+    ]
+}
