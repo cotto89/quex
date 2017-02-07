@@ -15,13 +15,13 @@ export type R2<S, P> = {
 
 /* HelperTypes
 -----------------*/
-export interface Quex<S, A> {
+export interface Quex<S> {
     readonly listenerCount: number;
     getState: GetState<S>;
     setState: SetState<S>;
     subscribe: Subscribe<S>;
-    dispatch: UseCase<S, A>;
-    usecase: UseCase<S, A>;
+    dispatch: UseCase<S>;
+    usecase: UseCase<S>;
 }
 
 
@@ -33,12 +33,12 @@ export interface SetState<T> {
     (state: Partial<T>): void;
 }
 
-export interface UseCase<S, A> {
+export interface UseCase<S> {
     (name?: string): {
         use: {
-            (queueCreater: (actions?: A) => Q1<S>): R1<S>;
-            <P>(queueCreater: (actions?: A) => Q2<S, P>): R2<S, P>;
-            (queueCreater: (actions?: A) => Function[]): R1<S> | R2<S, any>;
+            (queue: Q1<S>): R1<S>;
+            <P>(queue: Q2<S, P>): R2<S, P>;
+            (queue: Function[]): R1<S> | R2<S, any>;
         }
     };
 }
@@ -48,16 +48,14 @@ export interface Subscribe<T> {
 }
 
 
-export default function createFlux<S, A>(initialState: S, option?: {
-    actions?: A,
+export default function createFlux<S>(initialState: S, option?: {
     updater?: (s1: S, s2: Partial<S>) => S
 }) {
 
     let $state = initialState;
     let $listener: Function[] = [];
-    let $actions = option && option.actions;
     let $updater = (() => {
-        const f1 = option && option.updater && option.updater;
+        const f1 = option && option.updater;
         const f2 = (s1: S, s2: Partial<S>) => Object.assign({}, s1, s2);
         return f1 || f2;
     })();
@@ -91,17 +89,17 @@ export default function createFlux<S, A>(initialState: S, option?: {
     }
 
     /*
-     * usecase('name').use($ => [$.f1, $.f2])(params)
+     * usecase('name').use([$.f1, $.f2])(params)
      */
     function usecase(name?: string) {
         let $queue: Function[] = [];
 
         return { use };
 
-        function use(queueCreater: (actions?: A) => Q1<S>): R1<S>;
-        function use<P>(queueCreater: (actions?: A) => Q2<S, P>): R2<S, P>;
-        function use(queueCreater: (actions?: A) => Function[]): R1<S> | R2<S, any> {
-            $queue = queueCreater($actions);
+        function use(queue: Q1<S>): R1<S>;
+        function use<P>(queue: Q2<S, P>): R2<S, P>;
+        function use(queue: Function[]): R1<S> | R2<S, any> {
+            $queue = queue;
 
             /*
                 こんなの必要？

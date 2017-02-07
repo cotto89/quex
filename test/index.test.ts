@@ -29,11 +29,7 @@ const task = {
 
 // /* Quex
 // ------------------------------------ */
-const quex = build(initState(), {
-    actions: {
-        counter: { ...task }
-    }
-});
+const quex = build(initState());
 beforeEach(() => {
     quex.setState(initState());
 });
@@ -57,8 +53,8 @@ describe('setState()', () => {
 
 describe('subscribe()', () => {
     it('expect receive notification when state is updated', () => {
-        const increment = quex.usecase('increment').use($ => [
-            $.counter.increment
+        const increment = quex.usecase('increment').use([
+            task.increment
         ]);
         const spy = sinon.spy();
         const unsubscribe = quex.subscribe(spy);
@@ -80,10 +76,10 @@ describe('subscribe()', () => {
 
 describe('usecase()', () => {
     it('expect be ensured calling of task order', async () => {
-        const increment = quex.usecase('increment').use($ => [
-            $.counter.increment,
-            $.counter.asyncIncrement,
-            $.counter.multiIncrement,
+        const increment = quex.usecase('increment').use([
+            task.increment,
+            task.asyncIncrement,
+            task.multiIncrement
         ]);
 
         const listener = sinon.spy();
