@@ -42,12 +42,7 @@ function createFlux(initialState, option) {
                 こんなの必要？
                 $queue = option.middleware($queue)
             */
-            /*
-              testのためにuseでできたqueueを参照できるようにしてるんだけど、これ必要？
-            */
-            let $run = run;
-            $run._queue = $queue;
-            return $run;
+            return run;
         }
         ;
         function run() {
