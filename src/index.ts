@@ -57,46 +57,47 @@ export default function createFlux<S>(initialState: S, option?: {
                 $queue = option.middleware($queue)
             */
 
-            return run;
-        };
-
-        function run() {
-            next($queue[Symbol.iterator](), arguments[0]);
+            return function run() {
+                next($queue[Symbol.iterator](), arguments[0], { name });
+            };
         }
+    }
 
-        /**
-         * queueのiteratorからtaskを1つ取り出して実行する
-         */
-        function next(i: Iterator<Function>, p: any, task?: Function) {
-            let iResult = task ? { value: task, done: false } : i.next();
+    /**
+     * queueのiteratorからtaskを1つ取り出して実行する
+     */
+    function next(i: Iterator<Function>, p: any, opts: {
+        name?: string;
+        task?: Function
+    }) {
+        let iResult = opts.task ? { value: opts.task, done: false } : i.next();
 
-            try {
-                if (iResult.done) {
-                    publish($state, name);
-                    return;
-                }
-
-                const result = iResult.value($state, p);
-
-                /* Promise(Like) */
-                if (result && typeof result.then === 'function') {
-                    publish($state, name);
-                    result.then(
-                        (t: Function) => (typeof t === 'function') && next(i, p, t),
-                        (e: Error) => publish($state, name, e)
-                    );
-                    return;
-                }
-
-                if (!iResult.done) {
-                    result && setState(result);
-                    next(i, p);
-                    return;
-                }
-
-            } catch (e) {
-                publish($state, name, e);
+        try {
+            if (iResult.done) {
+                publish($state, opts.name);
+                return;
             }
+
+            const result = iResult.value($state, p);
+
+            /* Promise(Like) */
+            if (result && typeof result.then === 'function') {
+                result.then(
+                    (task: Function) => (typeof task === 'function') && next(i, p, { task, name: opts.name }),
+                    (e: Error) => publish($state, opts.name, e)
+                );
+                publish($state, opts.name);
+                return;
+            }
+
+            if (!iResult.done) {
+                result && setState(result);
+                next(i, p, { name: opts.name });
+                return;
+            }
+
+        } catch (e) {
+            publish($state, opts.name, e);
         }
     }
 }
