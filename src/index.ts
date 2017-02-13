@@ -26,7 +26,8 @@ export default function createFlux<S>(initialState: S, option?: {
     }
 
     function setState(state: Partial<S>) {
-        return $state = $updater($state, state);
+        $state = $updater($state, state);
+        return $state;
     }
 
     function subscribe(listener: (state: S, event?: string, err?: Error) => void) {
@@ -39,7 +40,7 @@ export default function createFlux<S>(initialState: S, option?: {
     }
 
     /*
-     * usecase('name').use([$.f1, $.f2])(params)
+     * usecase('name').use([f1, f2])(params)
      */
     function usecase(name?: string) {
         let $queue: Function[] = [];
@@ -79,7 +80,7 @@ export default function createFlux<S>(initialState: S, option?: {
 
                 /* Promise(Like) */
                 if (result && typeof result.then === 'function') {
-                    result.then((t: any) => next(i, p, t), (e: Error) => publish($state, name, e));
+                    result.then((t: Function) => next(i, p, t), (e: Error) => publish($state, name, e));
                     publish($state, name);
                     return;
                 }
@@ -104,12 +105,8 @@ export type T3<S, P> = (state: S, params: P) => Partial<S> | void;
 export type T4<S, P> = (state: S, params: P) => Promise<T3<S, P>> | void;
 export type Q1<S> = (T1<S> | T2<S>)[];
 export type Q2<S, P> = (T3<S, P> | T4<S, P>)[];
-export interface R1 {
-    (): void;
-}
-export interface R2<P> {
-    (p: P): void;
-}
+export type R1 = () => void;
+export type R2<P> = (p: P) => void;
 
 /* HelperTypes
 -----------------*/
@@ -127,7 +124,7 @@ export interface GetState<T> {
 }
 
 export interface SetState<T> {
-    (state: Partial<T>): void;
+    (state: Partial<T>): T;
 }
 
 export interface UseCase<S> {
