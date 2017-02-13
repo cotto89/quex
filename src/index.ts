@@ -80,8 +80,11 @@ export default function createFlux<S>(initialState: S, option?: {
 
                 /* Promise(Like) */
                 if (result && typeof result.then === 'function') {
-                    result.then((t: Function) => next(i, p, t), (e: Error) => publish($state, name, e));
                     publish($state, name);
+                    result.then(
+                        (t: Function) => (typeof t === 'function') && next(i, p, t),
+                        (e: Error) => publish($state, name, e)
+                    );
                     return;
                 }
 
