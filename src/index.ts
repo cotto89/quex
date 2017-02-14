@@ -1,10 +1,12 @@
 export default function createFlux<S>(initialState: S, option?: {
-    updater?: (s1: S, s2: Partial<S>) => S
+    updater?: (s1: S, s2: Partial<S>) => S;
+    enhancer?: Enhancer<S>
 }) {
 
     let $state = initialState;
     let $listener: Function[] = [];
-    let $updater = (() => {
+    const $enhancer = option && option.enhancer;
+    const $updater = (() => {
         const f1 = option && option.updater;
         const f2 = (s1: S, s2: Partial<S>) => Object.assign({}, s1, s2);
         return f1 || f2;
@@ -52,12 +54,7 @@ export default function createFlux<S>(initialState: S, option?: {
         function use(queue: Q1<S>): R1;
         function use<P>(queue: Q2<S, P>): R2<P>;
         function use(queue: Function[]): R1 | R2<any> {
-            $queue = queue;
-
-            /*
-                こんなの必要？
-                $queue = option.middleware($queue)
-            */
+            $queue = $enhancer ? queue.map(t => $enhancer(name, t)) : queue;
 
             return function run() {
                 next($queue[Symbol.iterator](), arguments[0], { name });
@@ -160,4 +157,8 @@ export interface UseCase<S> {
 
 export interface Subscribe<T> {
     (listener: (state: T, event?: string, error?: Error) => void): () => void;
+}
+
+export interface Enhancer<S> {
+    (name: string | undefined, task: Task<S, any>): Task<S, any>;
 }

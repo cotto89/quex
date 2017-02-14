@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import * as sinon from 'sinon';
-import build, { Quex } from './../src/index';
+import build, { Quex, Enhancer } from './../src/index';
 
 /* State
 ------------------------------ */
@@ -117,7 +117,7 @@ describe('usecase()', () => {
             task.increment,
             ignoredPromiseTask,
             task.incrementAsync,
-            task.incrementMulti
+            task.incrementMulti,
         ])(2);
 
         await new Promise(resolve => {
@@ -126,5 +126,47 @@ describe('usecase()', () => {
                 resolve();
             });
         });
+    });
+});
+
+
+describe('option.updator', () => {
+    it('can change how to assign next state', () => {
+        const updater = (s1: S, s2: Partial<S>) => s1;
+        const updaterSpy = sinon.spy(updater);
+
+        const qx = build(initState(), {
+            updater: (updaterSpy as typeof updater)
+        });
+
+        qx.usecase().use([
+            (s) => ({ count: s.count + 10 })
+        ])();
+
+        assert(updaterSpy.calledWith({ count: 0 }, { count: 10 }));
+        assert.deepEqual(qx.getState(), { count: 0 });
+    });
+});
+
+
+describe('option.enhancer', () => {
+    it('can enhance task', () => {
+        const enhancer: Enhancer<S> = (name: string, _task: Function) => {
+            assert.equal(name, 'INCREMENT');
+            assert.equal(_task.name, 'increment');
+            return (s: S, p: any) => {
+                assert.deepEqual(s, { count: 0 });
+                assert.equal(p, 2);
+                return _task(s, p);
+            };
+        };
+
+        const qx = build(initState(), { enhancer });
+
+        qx.usecase('INCREMENT').use([
+            task.increment
+        ])(2);
+
+        assert.deepEqual(qx.getState(), { count: 2 });
     });
 });
