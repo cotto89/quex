@@ -2,7 +2,8 @@
 function createFlux(initialState, option) {
     let $state = initialState;
     let $listener = [];
-    let $updater = (() => {
+    const $enhancer = option && option.enhancer;
+    const $updater = (() => {
         const f1 = option && option.updater;
         const f2 = (s1, s2) => Object.assign({}, s1, s2);
         return f1 || f2;
@@ -21,59 +22,64 @@ function createFlux(initialState, option) {
         return $state;
     }
     function setState(state) {
-        return $state = $updater($state, state);
+        $state = $updater($state, state);
+        return $state;
     }
     function subscribe(listener) {
         $listener.push(listener);
-        return () => { $listener = $listener.filter(fn => fn !== listener); };
+        return function unsubscribe() {
+            $listener = $listener.filter(f => f !== listener);
+        };
     }
     function publish(state, event, error) {
         $listener.forEach(f => f(state, event, error));
     }
     /*
-     * usecase('name').use([$.f1, $.f2])(params)
+     * usecase('name').use([f1, f2])(params)
      */
     function usecase(name) {
         let $queue = [];
         return { use };
         function use(queue) {
-            $queue = queue;
-            /*
-                こんなの必要？
-                $queue = option.middleware($queue)
-            */
-            return run;
+            $queue = $enhancer ? queue.map(t => $enhancer(name, t)) : queue;
+            return function run() {
+                next($queue[Symbol.iterator](), arguments[0], { name });
+            };
         }
-        ;
-        function run() {
-            next($queue[Symbol.iterator](), arguments[0]);
-        }
-        /**
-         * queueのiteratorからtaskを1つ取り出して実行する
-         */
-        function next(i, p, task) {
-            let iResult = task ? { value: task, done: false } : i.next();
-            try {
-                if (iResult.done) {
-                    publish($state, name);
-                    return;
+    }
+    /**
+     * queueのiteratorからtaskを1つ取り出して実行する
+     */
+    function next(i, p, opts) {
+        const name = opts.name;
+        let iResult = opts.task ? { value: opts.task, done: false } : i.next();
+        try {
+            if (iResult.done) {
+                publish($state, name);
+                return;
+            }
+            const result = (typeof iResult.value === 'function') && iResult.value($state, p);
+            /* Promise(Like) */
+            if (result && typeof result.then === 'function') {
+                result.then(resolved, rejected);
+                publish($state, name);
+                return;
+                function resolved(task) {
+                    next(i, p, { task, name });
                 }
-                const result = iResult.value($state, p);
-                /* Promise(Like) */
-                if (result && typeof result.then === 'function') {
-                    result.then((t) => next(i, p, t), (e) => publish($state, name, e));
-                    publish($state, name);
-                    return;
-                }
-                if (!iResult.done) {
-                    result && setState(result);
-                    next(i, p);
-                    return;
+                ;
+                function rejected(err) {
+                    publish($state, name, err);
                 }
             }
-            catch (e) {
-                publish($state, name, e);
+            if (!iResult.done) {
+                result && setState(result);
+                next(i, p, { name });
+                return;
             }
+        }
+        catch (e) {
+            publish($state, name, e);
         }
     }
 }
