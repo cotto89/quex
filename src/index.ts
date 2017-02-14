@@ -32,7 +32,9 @@ export default function createFlux<S>(initialState: S, option?: {
 
     function subscribe(listener: (state: S, event?: string, err?: Error) => void) {
         $listener.push(listener);
-        return () => { $listener = $listener.filter(fn => fn !== listener); };
+        return function unsubscribe() {
+            $listener = $listener.filter(f => f !== listener);
+        };
     }
 
     function publish(state: S, event?: string, error?: Error) {
@@ -78,16 +80,21 @@ export default function createFlux<S>(initialState: S, option?: {
                 return;
             }
 
-            const result = iResult.value($state, p);
+            const result = (typeof iResult.value === 'function') && iResult.value($state, p);
 
             /* Promise(Like) */
             if (result && typeof result.then === 'function') {
-                result.then(
-                    (task: Function) => (typeof task === 'function') && next(i, p, { task, name: opts.name }),
-                    (e: Error) => publish($state, opts.name, e)
-                );
+                result.then(resolved, rejected);
                 publish($state, opts.name);
                 return;
+
+                function resolved(task: any) {
+                    next(i, p, { task, name: opts.name });
+                };
+
+                function rejected(err: Error) {
+                    publish($state, opts.name, err);
+                }
             }
 
             if (!iResult.done) {
@@ -142,5 +149,5 @@ export interface UseCase<S> {
 }
 
 export interface Subscribe<T> {
-    (listener: (state: T, event?: string, error?: Error) => void): void;
+    (listener: (state: T, event?: string, error?: Error) => void): () => void;
 }

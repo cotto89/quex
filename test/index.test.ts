@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import * as sinon from 'sinon';
-import build from './../src/index';
+import build, { Quex } from './../src/index';
 
 /* State
 ------------------------------ */
@@ -18,22 +18,22 @@ const task = {
     increment: (s: S, count: number) => ({
         count: s.count + count
     }),
-    asyncIncrement: async (_: S, count: number) => {
+    incrementAsync: async (_: S, count: number) => {
         const n = await Promise.resolve(count);
         return (s: S) => ({
             count: s.count + n
         });
     },
-    multiIncrement: (s: S, count: number) => ({
+    incrementMulti: (s: S, count: number) => ({
         count: s.count * count
     })
 };
 
 /* Quex
 ------------------------------------ */
-const quex = build(initState());
+let quex: Quex<S>;
 beforeEach(() => {
-    quex.setState(initState());
+    quex = build(initState());
 });
 
 
@@ -47,8 +47,9 @@ describe('getState()', () => {
 
 describe('setState()', () => {
     it('update state', () => {
-        quex.setState({ count: 10 });
+        const nextState = quex.setState({ count: 10 });
         assert.deepEqual(quex.getState(), { count: 10 });
+        assert.deepEqual(nextState, quex.getState());
     });
 });
 
@@ -84,8 +85,8 @@ describe('usecase()', () => {
 
         quex.usecase('increment').use([
             task.increment,
-            task.asyncIncrement,
-            task.multiIncrement
+            task.incrementAsync,
+            task.incrementMulti
         ])(2);
 
         await new Promise(resolve => {
@@ -95,6 +96,32 @@ describe('usecase()', () => {
                 assert(listener.secondCall.calledWithExactly({ count: 8 }, 'increment', undefined));
                 assert.equal(listener.callCount, 2);
                 // もしtaskが非同期処理の完了を待っていなければ count は 6 になっている
+                assert.deepEqual(quex.getState(), { count: 8 });
+                resolve();
+            });
+        });
+    });
+
+
+    it('ignored when task is not a Function', async () => {
+        const ignoredPromiseTask = async (s: S, n: number) => {
+            assert.deepEqual(s, { count: 2 });
+            assert.equal(n, 2);
+            return { count: s.count + n };
+        };
+
+        const listener = sinon.spy();
+        quex.subscribe(listener);
+
+        quex.usecase().use<number>([
+            task.increment,
+            ignoredPromiseTask,
+            task.incrementAsync,
+            task.incrementMulti
+        ])(2);
+
+        await new Promise(resolve => {
+            setTimeout(() => {
                 assert.deepEqual(quex.getState(), { count: 8 });
                 resolve();
             });
