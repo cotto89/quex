@@ -72,11 +72,12 @@ export default function createFlux<S>(initialState: S, option?: {
         name?: string;
         task?: Function
     }) {
+        const name = opts.name;
         let iResult = opts.task ? { value: opts.task, done: false } : i.next();
 
         try {
             if (iResult.done) {
-                publish($state, opts.name);
+                publish($state, name);
                 return;
             }
 
@@ -85,35 +86,44 @@ export default function createFlux<S>(initialState: S, option?: {
             /* Promise(Like) */
             if (result && typeof result.then === 'function') {
                 result.then(resolved, rejected);
-                publish($state, opts.name);
+                publish($state, name);
                 return;
 
                 function resolved(task: any) {
-                    next(i, p, { task, name: opts.name });
+                    next(i, p, { task, name });
                 };
 
                 function rejected(err: Error) {
-                    publish($state, opts.name, err);
+                    publish($state, name, err);
                 }
             }
 
             if (!iResult.done) {
                 result && setState(result);
-                next(i, p, { name: opts.name });
+                next(i, p, { name });
                 return;
             }
 
         } catch (e) {
-            publish($state, opts.name, e);
+            publish($state, name, e);
         }
     }
 }
 
 
-export type T1<S> = (state: S) => Partial<S> | void;
-export type T2<S> = (state: S) => Promise<T1<S>> | void;
-export type T3<S, P> = (state: S, params: P) => Partial<S> | void;
-export type T4<S, P> = (state: S, params: P) => Promise<T3<S, P>> | void;
+export interface T1<S> {
+    (state: S): Partial<S> | void;
+}
+export interface T2<S> {
+    (state: S): Promise<T1<S>> | void;
+}
+export interface T3<S, P> {
+    (state: S, params: P): Partial<S> | void;
+}
+export interface T4<S, P> {
+    (state: S, params: P): Promise<T3<S, P>> | void;
+}
+export type Task<S, P> = T1<S> | T2<S> | T3<S, P> | T4<S, P> | Function;
 export type Q1<S> = (T1<S> | T2<S>)[];
 export type Q2<S, P> = (T3<S, P> | T4<S, P>)[];
 export type R1 = () => void;
