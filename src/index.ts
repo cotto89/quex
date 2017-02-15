@@ -32,15 +32,15 @@ export default function createFlux<S>(initialState: S, option?: {
         return $state;
     }
 
-    function subscribe(listener: (state: S, event?: string, err?: Error) => void) {
+    function subscribe(listener: (state: S, err?: Error) => void) {
         $listener.push(listener);
         return function unsubscribe() {
             $listener = $listener.filter(f => f !== listener);
         };
     }
 
-    function publish(state: S, event?: string, error?: Error) {
-        $listener.forEach(f => f(state, event, error));
+    function publish(state: S, error?: Error) {
+        $listener.forEach(f => f(state, error));
     }
 
     /*
@@ -57,7 +57,7 @@ export default function createFlux<S>(initialState: S, option?: {
             $queue = $enhancer ? queue.map(t => $enhancer(name, t)) : queue;
 
             return function run() {
-                next($queue[Symbol.iterator](), arguments[0], { name });
+                next($queue[Symbol.iterator](), arguments[0]);
             };
         }
     }
@@ -65,16 +65,12 @@ export default function createFlux<S>(initialState: S, option?: {
     /**
      * queueのiteratorからtaskを1つ取り出して実行する
      */
-    function next(i: Iterator<Function>, p: any, opts: {
-        name?: string;
-        task?: Function
-    }) {
-        const name = opts.name;
-        let iResult = opts.task ? { value: opts.task, done: false } : i.next();
+    function next(i: Iterator<Function>, p: any, task?: Function) {
+        let iResult = task ? { value: task, done: false } : i.next();
 
         try {
             if (iResult.done) {
-                publish($state, name);
+                publish($state);
                 return;
             }
 
@@ -83,26 +79,26 @@ export default function createFlux<S>(initialState: S, option?: {
             /* Promise(Like) */
             if (result && typeof result.then === 'function') {
                 result.then(resolved, rejected);
-                publish($state, name);
+                publish($state);
                 return;
 
-                function resolved(task: any) {
-                    next(i, p, { task, name });
+                function resolved(t: any) {
+                    next(i, p, t);
                 };
 
                 function rejected(err: Error) {
-                    publish($state, name, err);
+                    publish($state, err);
                 }
             }
 
             if (!iResult.done) {
                 result && setState(result);
-                next(i, p, { name });
+                next(i, p);
                 return;
             }
 
         } catch (e) {
-            publish($state, name, e);
+            publish($state, e);
         }
     }
 }
@@ -156,7 +152,7 @@ export interface UseCase<S> {
 }
 
 export interface Subscribe<T> {
-    (listener: (state: T, event?: string, error?: Error) => void): () => void;
+    (listener: (state: T, error?: Error) => void): () => void;
 }
 
 export interface Enhancer<S> {

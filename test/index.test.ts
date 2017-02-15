@@ -63,7 +63,7 @@ describe('subscribe()', () => {
             task.increment
         ])(10);
 
-        assert(spy.calledWith({ count: 10 }, 'increment', undefined));
+        assert(spy.calledWith({ count: 10 }, undefined));
         unsubscribe();
     });
 
@@ -92,8 +92,8 @@ describe('usecase()', () => {
         await new Promise(resolve => {
             setTimeout(() => {
                 // 同期処理のときはpublishされないので、非同期処理に入ったときと、done時の2回呼ばれる
-                assert(listener.firstCall.calledWithExactly({ count: 2 }, 'increment', undefined));
-                assert(listener.secondCall.calledWithExactly({ count: 8 }, 'increment', undefined));
+                assert(listener.firstCall.calledWithExactly({ count: 2 }, undefined));
+                assert(listener.secondCall.calledWithExactly({ count: 8 }, undefined));
                 assert.equal(listener.callCount, 2);
                 // もしtaskが非同期処理の完了を待っていなければ count は 6 になっている
                 assert.deepEqual(quex.getState(), { count: 8 });
