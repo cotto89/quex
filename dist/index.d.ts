@@ -17,7 +17,7 @@ export default function createFlux<S>(initialState: S, option?: {
             <P>(queue: (T3<S, P> | T4<S, P>)[]): R2<P>;
         };
     };
-    subscribe: (listener: (state: S, event?: string | undefined, err?: Error | undefined) => void) => () => void;
+    subscribe: (listener: (state: S, err?: Error | undefined) => void) => () => void;
 };
 export interface T1<S> {
     (state: S): Partial<S> | void;
@@ -60,7 +60,7 @@ export interface UseCase<S> {
     };
 }
 export interface Subscribe<T> {
-    (listener: (state: T, event?: string, error?: Error) => void): () => void;
+    (listener: (state: T, error?: Error) => void): () => void;
 }
 export interface Enhancer<S> {
     (name: string | undefined, task: Task<S, any>): Task<S, any>;
