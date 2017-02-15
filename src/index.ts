@@ -74,7 +74,7 @@ export default function createFlux<S>(initialState: S, option?: {
                 return;
             }
 
-            const result = (typeof iResult.value === 'function') && iResult.value($state, p);
+            const result = iResult.value($state, p);
 
             /* Promise(Like) */
             if (result && typeof result.then === 'function') {
@@ -83,7 +83,8 @@ export default function createFlux<S>(initialState: S, option?: {
                 return;
 
                 function resolved(t: any) {
-                    next(i, p, t);
+                    const _t = (typeof t === 'function') && t;
+                    next(i, p, _t);
                 };
 
                 function rejected(err: Error) {
