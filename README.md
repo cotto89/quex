@@ -1,8 +1,8 @@
 # Quex
 
-State Management Processor.
+State Transaction Processor.
 
-Quex is not a Flux that process with Command Pattern but just it use to state mamagement with `Queue` and `Task`.
+Quex is not a Flux that process with Command Pattern but just processor use to state mamagement with `Queue` and `Task`.
 
 ## Install
 
@@ -169,7 +169,9 @@ type AsyncTask = (state: S, params: P) => Promise<Task>
 
 ### How to process task in the queue
 
-All task in the queue are waiting for completition of previous task even if it is AsyncTask. If task throw Error, Queue processing is aborted.
+All task in the queue are waiting for completition of previous task even if it is AsyncTask.
+
+ If task throw Error, Queue processing is aborted.
 
 
 ### Transaction aborting
