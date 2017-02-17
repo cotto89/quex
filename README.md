@@ -1,8 +1,8 @@
 # Quex
 
-State Transaction Processor.
+State Transition Processor.
 
-Quex is not a Flux that process with Command Pattern but just processor use to state mamagement with `Queue` and `Task`.
+Quex is not a Flux that process with Command Pattern but just processor use to state transition with `Queue` and `Task`.
 
 ## Install
 
@@ -105,7 +105,7 @@ const enhancer = (name, task) => (state, params) => {
 
 ### `store.subscribe(Listener): () => void`
 
-Subscribing changing of state and transaction error.
+Subscribing changing of state and transition error.
 
 **return**: Function that remove listener.
 
@@ -174,9 +174,9 @@ All task in the queue are waiting for completition of previous task even if it i
  If task throw Error, Queue processing is aborted.
 
 
-### Transaction aborting
+### Transition aborting
 
-To abort transaction, Throw Error in the Task.
+To abort state transition, Throw Error in the Task.
 
 
 ### Timing of publishing new state to listener
@@ -188,6 +188,11 @@ Notification is reduced when state is updated by the sequence of SyncTask in ord
 #### 2. When task return Promise.
 
 Otherwise, view will not updated until async process is completed.
+
+#### 3. When Task throw Error
+
+In this case, State transition is aborted and Listener is called with state and error.
+
 
 ### With React.js
 
