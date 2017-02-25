@@ -427,14 +427,14 @@ espower-source@^2.0.0:
     path-is-absolute "^1.0.0"
     xtend "^4.0.0"
 
-espower-typescript@^7.0.0:
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/espower-typescript/-/espower-typescript-7.0.0.tgz#fbb168579286a36ef4311ba74122f201e12443f4"
+espower-typescript@^8.0.0:
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/espower-typescript/-/espower-typescript-8.0.0.tgz#1b780289f3dfd78801aa919eae6522ec5fd85c46"
   dependencies:
     espower-source "^2.0.0"
     minimatch "^3.0.3"
-    typescript "^2.1.4"
-    typescript-simple "^7.0.0"
+    typescript "^2.2.1"
+    typescript-simple "^8.0.0"
 
 espower@^2.0.0:
   version "2.0.1"
@@ -541,7 +541,7 @@ function-bind@^1.0.2, function-bind@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/function-bind/-/function-bind-1.1.0.tgz#16176714c801798e4e8f2cf7f7529467bb4a5771"
 
-glob@7.0.5, glob@^7.0.5:
+glob@7.0.5:
   version "7.0.5"
   resolved "https://registry.yarnpkg.com/glob/-/glob-7.0.5.tgz#b4202a69099bbb4d292a7c1b95b6682b67ebdc95"
   dependencies:
@@ -552,7 +552,7 @@ glob@7.0.5, glob@^7.0.5:
     once "^1.3.0"
     path-is-absolute "^1.0.0"
 
-glob@^7.1.1:
+glob@^7.0.5, glob@^7.1.1:
   version "7.1.1"
   resolved "https://registry.yarnpkg.com/glob/-/glob-7.1.1.tgz#805211df04faaf1c63a3600306cdf5ade50b2ec8"
   dependencies:
@@ -885,9 +885,9 @@ normalize-package-data@^2.3.2:
     semver "2 || 3 || 4 || 5"
     validate-npm-package-license "^3.0.1"
 
-npm-run-all@^4.0.1:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/npm-run-all/-/npm-run-all-4.0.1.tgz#f10144d20b57ed9bbf6c36a8de9502e0b80f2b4e"
+npm-run-all@^4.0.2:
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/npm-run-all/-/npm-run-all-4.0.2.tgz#a84669348e6db6ccbe052200b4cdb6bfe034a4fe"
   dependencies:
     chalk "^1.1.3"
     cross-spawn "^5.0.1"
@@ -1161,9 +1161,9 @@ resolve@^1.1.7:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.2.0.tgz#9589c3f2f6149d1417a40becc1663db6ec6bc26c"
 
-rimraf@^2.5.4:
-  version "2.5.4"
-  resolved "https://registry.yarnpkg.com/rimraf/-/rimraf-2.5.4.tgz#96800093cbf1a0c86bd95b4625467535c29dfa04"
+rimraf@^2.6.1:
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/rimraf/-/rimraf-2.6.1.tgz#c2338ec643df7a1b7fe5c54fa86f57428a55f33d"
   dependencies:
     glob "^7.0.5"
 
@@ -1342,19 +1342,15 @@ type-name@^2.0.0, type-name@^2.0.1:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/type-name/-/type-name-2.0.2.tgz#efe7d4123d8ac52afff7f40c7e4dec5266008fb4"
 
-typescript-simple@^7.0.0:
-  version "7.0.2"
-  resolved "https://registry.yarnpkg.com/typescript-simple/-/typescript-simple-7.0.2.tgz#286ea7614385f2744624a40e83bcb67c6debf425"
+typescript-simple@^8.0.0:
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/typescript-simple/-/typescript-simple-8.0.0.tgz#a84e6a49299118996fc6d21c555de76399133695"
   dependencies:
-    typescript "^2.1.4"
+    typescript "^2.2.1"
 
-typescript@2.1.6:
-  version "2.1.6"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.1.6.tgz#40c7e6e9e5da7961b7718b55505f9cac9487a607"
-
-typescript@^2.1.4:
-  version "2.1.5"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.1.5.tgz#6fe9479e00e01855247cea216e7561bafcdbcd4a"
+typescript@2.2.1, typescript@^2.2.1:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.2.1.tgz#4862b662b988a4c8ff691cc7969622d24db76ae9"
 
 universal-deep-strict-equal@^1.2.1:
   version "1.2.2"
