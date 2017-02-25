@@ -1,4 +1,5 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 function createFlux(initialState, option) {
     let $state = initialState;
     let $listener = [];
@@ -83,6 +84,5 @@ function createFlux(initialState, option) {
         }
     }
 }
-Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = createFlux;
 //# sourceMappingURL=index.js.map
