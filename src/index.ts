@@ -1,7 +1,19 @@
-export default function createFlux<S>(initialState: S, option?: {
-    updater?: (s1: S, s2: Partial<S>) => S;
+/**
+ * create quex store
+ *
+ * @export
+ * @template S
+ * @param {S} initialState
+ * @param {{
+ *     updater?: Updater<S>;
+ *     enhancer?: Enhancer<S>
+ * }} [option]
+ * @returns {Quex<S>}
+ */
+export default function createStore<S>(initialState: S, option?: {
+    updater?: Updater<S>;
     enhancer?: Enhancer<S>
-}) {
+}): Quex<S> {
 
     let $state = initialState;
     let $listener: Function[] = [];
@@ -23,15 +35,33 @@ export default function createFlux<S>(initialState: S, option?: {
         subscribe,
     };
 
-    function getState() {
+    /**
+     * Get state
+     *
+     * @returns {S}
+     */
+    function getState(): S {
         return $state;
     }
 
-    function setState(state: Partial<S>) {
+    /**
+     * Set state
+     * this api depend on updater
+     *
+     * @param {Partial<S>} state
+     * @returns {S} state
+     */
+    function setState(state: Partial<S>): S {
         $state = $updater($state, state);
         return $state;
     }
 
+    /**
+     * Listen changing of state and exception of transition
+     *
+     * @param listener
+     * @returns {Function} unsubscribe
+     */
     function subscribe(listener: (state: S, err?: Error) => void) {
         $listener.push(listener);
         return function unsubscribe() {
@@ -39,12 +69,26 @@ export default function createFlux<S>(initialState: S, option?: {
         };
     }
 
+    /**
+     * Publish changing of state to listener
+     *
+     * @private
+     * @param {S} state
+     * @param {Error} [error]
+     * @returns {void}
+     */
     function publish(state: S, error?: Error) {
         $listener.forEach(f => f(state, error));
     }
 
-    /*
-     * usecase('name').use([f1, f2])(params)
+    /**
+     * Compose queue
+     *
+     * @param {string} [name]
+     * @returns {Use}
+     * @example
+     * usecase('name').use([f1, f2])(param)
+     * usecase('name').use(f1).use(f2)(param)
      */
     function usecase(name?: string) {
         let $queue: Function[] = [];
@@ -52,8 +96,7 @@ export default function createFlux<S>(initialState: S, option?: {
         return { use };
 
         function use(queue: Q1<S>): R1;
-        function use<P>(queue: Q2<S, P>): R2<P>;
-        function use(queue: Function[]): R1 | R2<any> {
+        function use<P>(queue: Q2<S, P>): R2<P> {
             $queue = $enhancer ? queue.map(t => $enhancer(name, t)) : queue;
 
             return function run() {
@@ -64,6 +107,12 @@ export default function createFlux<S>(initialState: S, option?: {
 
     /**
      * queueのiteratorからtaskを1つ取り出して実行する
+     *
+     * @private
+     * @param {Iterator<Function>} i
+     * @param {*} p
+     * @param {Function} [task]
+     * @returns {void}
      */
     function next(i: Iterator<Function>, p: any, task?: Function) {
         let iResult = task ? { value: task, done: false } : i.next();
@@ -112,12 +161,12 @@ export interface T2<S> {
     (state: S): Promise<T1<S>> | void;
 }
 export interface T3<S, P> {
-    (state: S, params: P): Partial<S> | void;
+    (state: S, param: P): Partial<S> | void;
 }
 export interface T4<S, P> {
-    (state: S, params: P): Promise<T3<S, P>> | void;
+    (state: S, param: P): Promise<T3<S, P>> | void;
 }
-export type Task<S, P> = T1<S> | T2<S> | T3<S, P> | T4<S, P> | Function;
+export type Task<S, P> = T1<S> | T2<S> | T3<S, P> | T4<S, P>;
 export type Q1<S> = (T1<S> | T2<S>)[];
 export type Q2<S, P> = (T3<S, P> | T4<S, P>)[];
 export type R1 = () => void;
@@ -158,4 +207,8 @@ export interface Subscribe<T> {
 
 export interface Enhancer<S> {
     (name: string | undefined, task: Task<S, any>): Task<S, any>;
+}
+
+export interface Updater<S> {
+    (s1: S, s2: Partial<S>): S;
 }
