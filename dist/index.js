@@ -88,7 +88,7 @@ function createStore(initialState, option) {
         return { use };
         function use(arg) {
             let q = [].concat(arg);
-            $enhancer ? q.map((t) => $enhancer(name, t)) : q;
+            q = $enhancer ? q.map((t) => $enhancer(name, t)) : q;
             q.forEach(t => $queue.push(t));
             return $run || (() => {
                 $run = run;
