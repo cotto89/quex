@@ -1,6 +1,18 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-function createFlux(initialState, option) {
+/**
+ * create quex store
+ *
+ * @export
+ * @template S
+ * @param {S} initialState
+ * @param {{
+ *     updater?: Updater<S>;
+ *     enhancer?: Enhancer<S>
+ * }} [option]
+ * @returns {Quex<S>}
+ */
+function createStore(initialState, option) {
     let $state = initialState;
     let $listener = [];
     const $enhancer = option && option.enhancer;
@@ -19,37 +31,85 @@ function createFlux(initialState, option) {
         usecase,
         subscribe,
     };
+    /**
+     * Get state
+     *
+     * @returns {S}
+     */
     function getState() {
         return $state;
     }
+    /**
+     * Set state
+     * this api depend on updater
+     *
+     * @param {Partial<S>} state
+     * @returns {S} state
+     */
     function setState(state) {
         $state = $updater($state, state);
         return $state;
     }
+    /**
+     * Listen changing of state and exception of transition
+     *
+     * @param listener
+     * @returns {Function} unsubscribe
+     */
     function subscribe(listener) {
         $listener.push(listener);
         return function unsubscribe() {
             $listener = $listener.filter(f => f !== listener);
         };
     }
+    /**
+     * Publish changing of state to listener
+     *
+     * @private
+     * @param {S} state
+     * @param {Error} [error]
+     * @returns {void}
+     */
     function publish(state, error) {
         $listener.forEach(f => f(state, error));
     }
-    /*
-     * usecase('name').use([f1, f2])(params)
+    /**
+     * Compose queue
+     *
+     * @param {string} [name]
+     * @returns {Use}
+     * @example
+     * usecase('name').use([f1, f2])(param)
+     * usecase('name').use(f1).use(f2)(param)
      */
     function usecase(name) {
         let $queue = [];
+        let $run;
         return { use };
-        function use(queue) {
-            $queue = $enhancer ? queue.map(t => $enhancer(name, t)) : queue;
-            return function run() {
+        function use(arg) {
+            let q = [].concat(arg);
+            $enhancer ? q.map((t) => $enhancer(name, t)) : q;
+            q.forEach(t => $queue.push(t));
+            return $run || (() => {
+                $run = run;
+                $run.use = use;
+                return $run;
+            })();
+            function run() {
                 next($queue[Symbol.iterator](), arguments[0]);
-            };
+            }
+            ;
         }
     }
     /**
-     * queueのiteratorからtaskを1つ取り出して実行する
+     * Execute one task from iterator then
+     * mutation state and publishing
+     *
+     * @private
+     * @param {Iterator<Function>} i
+     * @param {*} p
+     * @param {Function} [task]
+     * @returns {void}
      */
     function next(i, p, task) {
         let iResult = task ? { value: task, done: false } : i.next();
@@ -84,5 +144,5 @@ function createFlux(initialState, option) {
         }
     }
 }
-exports.default = createFlux;
+exports.default = createStore;
 //# sourceMappingURL=index.js.map
