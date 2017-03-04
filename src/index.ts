@@ -13,7 +13,7 @@
 export default function createStore<S>(initialState: S, option?: {
     updater?: Updater<S>;
     enhancer?: Enhancer<S>
-}): Quex<S> {
+}) {
 
     let $state = initialState;
     let $listener: Function[] = [];
@@ -92,14 +92,25 @@ export default function createStore<S>(initialState: S, option?: {
      */
     function usecase(name?: string) {
         let $queue: Function[] = [];
+        let $run: any;
 
         return { use };
+        function use<S>(task: T1<S>): Use.ReturnType.R1<S>;
+        function use<S, P>(task: T2<S, P>): Use.ReturnType.R2<S, P>;
+        function use<S>(queue: Q1<S>): Use.ReturnType.R1<S>;
+        function use<S, P>(queue: T2<S, P>[]): Use.ReturnType.R2<S, P>;
+        function use(arg: Function | Function[]): Use.ReturnType.R1<S> | Use.ReturnType.R2<S, any> {
+            let q = ([] as Function[]).concat(arg);
+            $enhancer ? q.map((t: any) => $enhancer(name, t)) : q;
+            q.forEach(t => $queue.push(t));
 
-        function use(queue: Q1<S>): R1;
-        function use<P>(queue: Q2<S, P>): R2<P> {
-            $queue = $enhancer ? queue.map(t => $enhancer(name, t)) : queue;
+            return $run || (() => {
+                $run = run;
+                $run.use = use;
+                return $run;
+            })();
 
-            return function run() {
+            function run() {
                 next($queue[Symbol.iterator](), arguments[0]);
             };
         }
@@ -153,62 +164,59 @@ export default function createStore<S>(initialState: S, option?: {
     }
 }
 
-
-export interface T1<S> {
-    (state: S): Partial<S> | void;
-}
-export interface T2<S> {
-    (state: S): Promise<T1<S>> | void;
-}
-export interface T3<S, P> {
-    (state: S, param: P): Partial<S> | void;
-}
-export interface T4<S, P> {
-    (state: S, param: P): Promise<T3<S, P>> | void;
-}
-export type Task<S, P> = T1<S> | T2<S> | T3<S, P> | T4<S, P>;
-export type Q1<S> = (T1<S> | T2<S>)[];
-export type Q2<S, P> = (T3<S, P> | T4<S, P>)[];
-export type R1 = () => void;
-export type R2<P> = (p: P) => void;
-
-/* HelperTypes
------------------*/
-export interface Quex<S> {
-    readonly listenerCount: number;
-    getState: GetState<S>;
-    setState: SetState<S>;
-    subscribe: Subscribe<S>;
-    dispatch: UseCase<S>;
-    usecase: UseCase<S>;
-}
-
-export interface GetState<T> {
-    (): T;
-}
-
-export interface SetState<T> {
-    (state: Partial<T>): T;
-}
-
-export interface UseCase<S> {
-    (name?: string): {
-        use: {
-            (queue: Q1<S>): R1;
-            <P>(queue: Q2<S, P>): R2<P>;
-            (queue: Function[]): R1 | R2<any>;
-        }
-    };
-}
-
-export interface Subscribe<T> {
-    (listener: (state: T, error?: Error) => void): () => void;
-}
-
 export interface Enhancer<S> {
-    (name: string | undefined, task: Task<S, any>): Task<S, any>;
+    (name: string | undefined, task: T1<S> | T2<S, any>): T1<S> | T2<S, any>;
 }
 
 export interface Updater<S> {
     (s1: S, s2: Partial<S>): S;
 }
+
+/* QueueType */
+export type Q1<S> = T1<S>[];
+export type Q2<S, P> = T2<S, P>[];
+
+/* TaskType */
+export type T1<S> = TaskType.T1<S> | TaskType.T2<S>;
+export type T2<S, P> = TaskType.T3<S, P> | TaskType.T4<S, P>;
+export namespace TaskType {
+    export interface T1<S> {
+        (state: S): Partial<S> | void;
+    }
+    export interface T2<S> {
+        (state: S): Promise<T1<S>> | void;
+    }
+    export interface T3<S, P> {
+        (state: S, param: P): Partial<S> | void;
+    }
+    export interface T4<S, P> {
+        (state: S, param: P): Promise<T3<S, P>> | void;
+    }
+}
+
+/* UseType */
+export namespace Use {
+    export interface U1<S> {
+        (queue: Q1<S>): ReturnType.R1<S>;
+    }
+    export interface U2<S, P> {
+        (queue: Q2<S, P>): ReturnType.R2<S, P>;
+    }
+    export interface U3<S> {
+        (task: T1<S>): ReturnType.R1<S>;
+    }
+    export interface U4<S, P> {
+        (task: T2<S, P>): ReturnType.R2<S, P>;
+    }
+    export namespace ReturnType {
+        export interface R1<S> {
+            (): void;
+            use: Use.U1<S> & Use.U3<S>;
+        }
+        export interface R2<S, P> {
+            (p: P): void;
+            use: Use.U2<S, P> & Use.U4<S, P>;
+        }
+    }
+}
+
