@@ -117,7 +117,8 @@ export default function createStore<S>(initialState: S, option?: {
     }
 
     /**
-     * queueのiteratorからtaskを1つ取り出して実行する
+     * Execute one task from iterator then
+     * mutation state and publishing
      *
      * @private
      * @param {Iterator<Function>} i
