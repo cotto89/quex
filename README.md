@@ -109,7 +109,7 @@ Subscribing changing of state and transition error.
 
 **return**: Function that remove listener.
 
-```ts
+```js
 interface Listener {
 	(state: S, error: Error) => void;
 }
@@ -123,30 +123,39 @@ interface Listener {
 
 **return**: `use()`
 
-```ts
+```js
 /* Type of Task */
-type T1<S> = (state: S) => Partial<S> | void;
-type T2<S> = (state: S) => Promise<T1<S>> | void;
-type T3<S, P> = (state: S, params: P) => Partial<S> | void;
-type T4<S, P> = (state: S, params: P) => Promise<T3<S, P>> | void;
+interface T1<S> {
+    (state: S): Partial<S> | void;
+}
+interface T2<S> {
+    (state: S): Promise<T1<S>> | void;
+}
+interface T3<S, P> {
+    (state: S, param: P): Partial<S> | void;
+}
+interface T4<S, P> {
+    (state: S, param: P): Promise<T3<S, P>> | void;
+}
 
 /* Type of Queue */
 type Q1<S> = (T1<S> | T2<S>)[];
 type Q2<S, P> = (T3<S, P> | T4<S, P>)[];
-
-interface UseCase<S> {
-    (name?: string): {
-        use: {
-            (queue: Q1<S>): () => void;
-            <P>(queue: Q2<S, P>): (params: P) => void;
-        }
-    };
-}
 ```
+
+`use` can chain.
+
+```js
+store.usecase()
+    .use(task.increment)
+    .use(task.incrementAsync)
+    .use(task.incrementMulti)
+```
+
 
 ### `store.listenerCount`
 
-```ts
+```js
  readonly listenerCount: number;
 ```
 
@@ -162,7 +171,7 @@ State will be change when Task return `nextState`.
 
 **AsyncTask should return `Promise<Function>`, not `Promise<State>`**, whenever want to update state.
 
-```ts
+```js
 type Task = (state: S, params: P) => S
 type AsyncTask = (state: S, params: P) => Promise<Task>
 ```
