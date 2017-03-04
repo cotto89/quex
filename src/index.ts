@@ -101,7 +101,7 @@ export default function createStore<S>(initialState: S, option?: {
         function use<S, P>(queue: T2<S, P>[]): Use.ReturnType.R2<S, P>;
         function use(arg: Function | Function[]): Use.ReturnType.R1<S> | Use.ReturnType.R2<S, any> {
             let q = ([] as Function[]).concat(arg);
-            $enhancer ? q.map((t: any) => $enhancer(name, t)) : q;
+            q = $enhancer ? q.map((t: any) => $enhancer(name, t)) : q;
             q.forEach(t => $queue.push(t));
 
             return $run || (() => {
