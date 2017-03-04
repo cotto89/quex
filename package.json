@@ -1,7 +1,7 @@
 {
   "name": "quex",
   "description": "State Transition Processor",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "author": "cotto",
   "bugs": {
     "url": "https://github.com/cotto89/quex/issues"
