@@ -98,7 +98,7 @@ export default function createStore<S>(initialState: S, option?: {
         function use<S>(task: T1<S>): Use.ReturnType.R1<S>;
         function use<S, P>(task: T2<S, P>): Use.ReturnType.R2<S, P>;
         function use<S>(queue: Q1<S>): Use.ReturnType.R1<S>;
-        function use<S, P>(queue: T2<S, P>[]): Use.ReturnType.R2<S, P>;
+        function use<S, P>(queue: Q2<S, P>): Use.ReturnType.R2<S, P>;
         function use(arg: Function | Function[]): Use.ReturnType.R1<S> | Use.ReturnType.R2<S, any> {
             let q = ([] as Function[]).concat(arg);
             q = $enhancer ? q.map((t: any) => $enhancer(name, t)) : q;
@@ -109,11 +109,11 @@ export default function createStore<S>(initialState: S, option?: {
                 $run.use = use;
                 return $run;
             })();
-
-            function run() {
-                next($queue[Symbol.iterator](), arguments[0]);
-            };
         }
+
+        function run() {
+            next($queue[Symbol.iterator](), arguments[0]);
+        };
     }
 
     /**
