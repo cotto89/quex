@@ -95,11 +95,11 @@ function createStore(initialState, option) {
                 $run.use = use;
                 return $run;
             })();
-            function run() {
-                next($queue[Symbol.iterator](), arguments[0]);
-            }
-            ;
         }
+        function run() {
+            next($queue[Symbol.iterator](), arguments[0]);
+        }
+        ;
     }
     /**
      * Execute one task from iterator then
